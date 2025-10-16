@@ -1,12 +1,19 @@
 package com.ubayadev.spongebobquiz
 
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.ubayadev.spongebobquiz.databinding.ActivityIntroBinding
+import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 class IntroActivity : AppCompatActivity() {
 
@@ -14,6 +21,45 @@ class IntroActivity : AppCompatActivity() {
 
     companion object{
         val PLAYER_NAME_KEY = "player_name"
+    }
+
+    private fun showDatePickerDialog(){
+        // set default date
+        val today = Calendar.getInstance()
+        val year = today.get(Calendar.YEAR)
+        val month = today.get(Calendar.MONTH)
+        val day = today.get(Calendar.DAY_OF_MONTH)
+
+        //set date picker dialog
+        val dp = DatePickerDialog(
+            this,
+            { view, selectedYear, selectedMonth, selectedDay ->
+                val selectedDate = Calendar.getInstance()
+                selectedDate.set(selectedYear, selectedMonth, selectedDay)
+                val formatDate = SimpleDateFormat("dd/MM/yyyy")
+                binding.txtBOD.setText(formatDate.format(selectedDate.time))
+                val formatDateSQL = SimpleDateFormat("yyyy-MM-dd")
+                binding.txtBOD.tag = formatDateSQL.format(selectedDate.time)
+            },
+            year,
+            month,
+            day
+        )
+
+        dp.show()
+    }
+
+    private fun loadMovie(url: String){
+        binding.webView.settings.javaScriptEnabled = true
+
+        //anonymous object --> tanpa nama
+        binding.webView.webViewClient = object: WebViewClient(){
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                binding.progressBar.visibility = View.INVISIBLE
+            }
+        }
+        binding.webView.loadUrl(url)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,5 +75,13 @@ class IntroActivity : AppCompatActivity() {
             finish()
         }
 
+        binding.btnEdit.setOnClickListener {
+            val intent = Intent(this, QuestionListActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.txtBOD.setOnClickListener { showDatePickerDialog() }
+
+        loadMovie("https://www.youtube.com/watch?v=qikEnX5pKBQ")
     }
 }
